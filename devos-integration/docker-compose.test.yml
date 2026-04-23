@@ -1,0 +1,24 @@
+services:
+  web:
+    build: ${WEB_SRC:-../../tap-web}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+
+  test-runner:
+    build: .
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - WEB_URL=http://web:3000
+    profiles:
+      - testing
+    command: /bin/sh /test.sh
